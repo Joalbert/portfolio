@@ -1,0 +1,48 @@
+{% extends "orders/base.html" %}
+
+{% block title %}
+    My Invoices
+{% endblock %}
+
+{% block body %}
+<div id="orderDetail" class="modal fade" tabIndex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 id="modaltitle" class="modal-title"></h5>
+        <button class="close pull-right" data-dismiss="modal">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+      </div>
+    </div>
+  </div>
+</div>
+    {% for order in order_list %}
+    <hr/>
+    <div data-order='{{ order.id }}' data-toggle="modal" data-target="#orderDetail">
+        <p><strong>Order Number: </strong>{{ order.id }} </p>
+        <p><strong>Order Date:</strong> {{ order.order_date }} </p>
+        <p><strong>Total:</strong> $ {{ order.order_total }} </p>
+    </div>
+    {% endfor %}
+    {% include "orders/pagination.html"%}
+    <br />
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+      $('#orderDetail').on('show.bs.modal', function(event){
+        let recipient = $(event.relatedTarget);
+        let modal = $(this);
+        let title = "Order Detail";
+        let id = recipient.data('order');
+        //let mUrl = location.protocol + "//" + location.hostname +"food/"+meal+ "/" +id;
+        let mUrl = "order-table/"+ id;
+        modal.find('.modal-header #modaltitle').html(title);
+        modal.find('.modal-body').html(
+          $.ajax({type:'get', url: mUrl, dataType: 'html',async: false}).responseText);
+        });
+      });
+     </script>
+{% endblock %}

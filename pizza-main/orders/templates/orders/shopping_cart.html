@@ -1,0 +1,220 @@
+{% extends "orders/base.html" %}
+
+{% block title %}
+    My Cart
+{% endblock %}
+
+{% block body %}
+{% load orders_extras %}
+<div id="orderForm" class="modal fade" tabIndex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 id="modaltitle" class="modal-title"></h5>
+        <button class="close pull-right" data-dismiss="modal">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+      </div>
+    </div>
+  </div>
+</div>
+<table class="table table-striped">
+<thead>
+  <tr>
+    <th> Food </th>
+    <th> Quantity </th>
+    <th> Unit Price </th>
+    <th> Total </th>
+  </tr>
+</thead>
+<tbody>
+{% for order in order_status_list %}
+  <tr id="meal" data-toggle="modal" data-target="#orderForm" data-order="{{order.id}}">
+    <td> <strong>{{order.menu_id.meal_type | meal_name }} </strong> <br />
+      {{ order.menu_id.ingredient.ingredient }} <br />
+      {{ order.menu_id.meal_size | meal_size }} <br />
+      {{order.extras}} {{order.topping}}
+      </td>
+    <td> {{order.quantity}}</td>
+    <td> {{order.menu_id.price}}</td>
+    <td> {{order.total}}</td>
+  </tr>
+{% endfor %}
+</tbody>
+<tfoot> <tr><th></th><th></th><th>Total:</th> <th>{{ order_status_list | total }}</th></tfoot>
+</table>
+<form action="{% url 'cart' %}" method="POST">
+  {% csrf_token %}
+  <button type ="submit" name="operation" value="Add" class="btn btn-dark"><i class="fa fa-shopping-cart"></i> Submit </button>
+</form>
+<br />
+<script>
+/**
+ * Handle of modal behaviour
+ */
+document.addEventListener('DOMContentLoaded', () => {
+  var sizeSelector;
+  var quantity;
+  var price;
+  modalAction();
+  });
+
+
+function modalAction(){
+$('#orderForm').on('show.bs.modal', function(event){
+  let recipient = $(event.relatedTarget);
+  let modal = $(this);
+  let title = "Edit Order";
+  let id = recipient.data('order');
+  //let mUrl = location.protocol + "//" + location.hostname +"food/"+meal+ "/" +id;
+  let mUrl = "order/"+ id;
+  modal.find('.modal-header #modaltitle').html(title);
+  modal.find('.modal-body').html(
+    $.ajax({type:'get', url: mUrl, dataType: 'html',async: false}).responseText);
+    quantity = document.querySelector("#id_quantity");
+    quantity.onchange=updateTotalUI;
+    document.querySelectorAll("button").forEach( btn =>{
+      btn.onclick = sendForm;
+    });
+    document.querySelectorAll(".additional").forEach( element => {
+      element.checked=false;
+    });
+  //document.querySelectorAll("button").forEach(button => {button.onclick =formHandle;});
+});
+$('#orderForm').on('hidden.bs.modal',function(){
+  location.reload();
+});
+}
+
+function sendForm(){
+  /**
+   * sendForm - send order form to server
+   *
+   * @return false to avoid propagation
+   */
+    const my_form = this.parentElement;
+    let request = new XMLHttpRequest();
+    let myCookie, csrftoken, meal, ingredient, operation;
+    let data = new FormData();
+    data = extractFormData(my_form);
+    id = document.querySelector("#meal").dataset.order;
+    additionals = getAdditionals();
+    for (let element of additionals){
+      data.append(element.name,element.value)
+    }
+    operation = this.value;
+    data.append("operation", operation)
+    request.open("POST", "order/"+ id );
+    request.onload = () => {
+      formHandle(my_form.action, request.responseText);
+    };
+    // Header with security token
+    myCookie = document.cookie.split("=");
+    csrftoken = myCookie[1];
+    request.setRequestHeader("X-CSRFToken", csrftoken);
+    request.send(data);
+    return false;
+  }
+
+function getAdditionals(){
+  let additionals = document.querySelectorAll(".additional");
+  let result = [];
+  for (let element of additionals){
+    if (element.checked)
+      result.push({'name': element.name, 'value': element.value});
+  }
+  return result;
+}
+
+
+function formHandle(formName, response)
+/**
+ * formHandle - description
+ *
+ * @param  {String} formName action information to be used to find div inflate notification
+ * @param  {String} response from server to client to notification purpose
+ * @return {void}          shows notification in User Interfase
+ */
+{
+
+  let query_result = formName.split("/");
+  let id = "#"+ query_result[query_result.length-2]+"-"+query_result[query_result.length-1];
+  document.querySelector(id).innerHTML=response;
+}
+
+function extractFormData(inputs){
+  /**
+   * extractFormData - description
+   *
+   * @param  {document} inputs all inputs available in form
+    let formName = document.querySelector("#");* @
+   return {FormData}        form data ready to be attached to request to server
+   */
+  let maximum = inputs.length;
+  const data = new FormData();
+  const noField = ["total", "price","additionals", "operation"];
+  for (let input of inputs)
+    if(!noField.includes(input.name))
+          data.append(input.name,input.value);
+  return data;
+}
+
+function updateTotalUI(){
+  /**
+   * updateTotalUI - update total price as per price or quantity change
+   *
+   * @return void          update total price field in form
+   */
+  try {
+    let priceValue = document.querySelector("#price").innerHTML;
+    let quantityValue = quantity.value;
+    const totalValue = document.querySelector("#total");
+    result =(priceValue * quantityValue);
+    totalValue.innerHTML = result.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');;
+  }
+  catch (e) {
+    console.log('No defined value');
+  }
+}
+
+
+function updatePrice(){
+  /**
+   * updatePrice - update price in User Interface when size change
+    *
+   * @return void  update user interphase with price as size change
+   */
+   let meal = $('#meal').data('meal');
+   let ingredient = $('#ingredient').data('ingredient');
+   let size = document.querySelector('#size').value;
+   let url = "/price/"+ meal + "/" + ingredient + "/" + size;
+   if(size>0){
+    requestData(url,"GET", "#price");
+    }
+}
+
+
+function requestData(urlForm, typeRequest, divInflater){
+  /**
+   * requestData - request data from server and load directly to div
+   *
+   * @param  {string} urlForm     state where the resources are in Server
+   * @param  {string} typeRequest GET/POST/PUT or any valid requet type as per HTTP protocol
+   * @param  {document} divInflater selector where response data would be populated
+   * @return void             update some selector according to data from Server
+   */
+  const request = new XMLHttpRequest();
+  request.open(typeRequest, urlForm);
+  request.onload = ()=> {
+    document.querySelector(divInflater).innerHTML = request.responseText;
+    updateTotalUI();
+  };
+  request.send();
+}
+
+
+</script>
+
+{% endblock %}

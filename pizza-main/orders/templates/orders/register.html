@@ -1,0 +1,15 @@
+{% extends "orders/base.html" %}
+
+{% block title %}
+    Register
+{% endblock %}
+
+{% block body %}
+{% load crispy_forms_tags %}
+    <form action="{% url 'register' %}" method="POST" class="form-group" novalidate>
+        {% csrf_token %}
+        {{ form|crispy }}
+        <button type ="submit" name="operation" value="Add" class="btn btn-lg btn-dark d-block mx-auto" style="padding:10px;">Register</button>
+    </form>
+    <br />
+{% endblock %}

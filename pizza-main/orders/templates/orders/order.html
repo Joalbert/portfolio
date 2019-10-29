@@ -1,0 +1,50 @@
+
+<div id="input" class='row' style="padding:20px;">
+  <div class="row">
+    <form action="{% url 'food' meal=meal_id ingredient_desc=ingredient_id %}" method="POST"
+          class="form-group" novalidate style="padding:20px;">
+        {% csrf_token %}
+        <div class="row">
+        <img src='{{photo}}' class="col-md-6" alt='{{meal}} {{ingredient}}'>
+        <div class="col-md-6">
+          <h5 id="meal" data-meal={{meal_id}}>{{meal}}</h5>
+          <p id="ingredient" data-ingredient={{ingredient_id}}>{{ingredient}}</p>
+          <select class="form-control" name="size" id="size">
+            <option value="0"> </option>
+            {% for size in sizes %}
+            <option value={{size.0}}> {{size.1}} </option>
+            {% endfor %}
+          </select>
+          <br/>
+          <input type="number" step="1" name="quantity" class="form-control" id="quantity">
+          <br/>
+        </div>
+      </div>
+        <div>
+          <fieldset name="additionals">
+          {% if topping_flg %}
+            {% for topping in toppings %}
+            <div class="form-check form-check-inline">
+              <input type="checkbox" class="form-check-input additional" name="topping_{{topping.id}}" value="{{topping.id}}">
+              <label for="topping_{{topping.id}}" class="col-form-label">{{topping}}</label>
+            </div>
+            {% endfor %}
+            <br/>
+          {% endif %}
+          {% if extra_flg %}
+            {% for extra in extras %}
+              <input type="checkbox" class="form-check-inline additional" name="extra_{{extra.id}}" value="{{extra.id}}"> {{extra}}
+            {% endfor %}
+            <br/>
+          {% endif %}
+        </fieldset>
+        </div>
+        <h8> Price: $ <strong id='price'></strong></h8> <br/>
+        <h7>Total: $ <strong id='total'></strong></h7>
+        <br/>
+        <button type ="submit" name="operation" class="btn btn-outline-primary" value="Add"
+                style="padding:10px;"><i class="fa fa-plus"></i> Add
+      </form>
+    </div>
+    <div id="order-{{meal_id}}-{{ingredient_id}}"></div>
+</div>
