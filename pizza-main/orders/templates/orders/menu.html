@@ -198,8 +198,8 @@
     let title = recipient.data('title');
     let id = recipient.data('id');
     let meal = recipient.data('meal');
-    //let mUrl = location.protocol + "//" + location.hostname +"food/"+meal+ "/" +id;
-    let mUrl = "food/"+meal+ "/" +id;
+    let mUrl = location.protocol + "//" + location.hostname +"/food/"+meal+ "/" +id;
+    //let mUrl = "food/"+meal+ "/" +id;
     modal.find('.modal-header #modaltitle').html(title);
     let response =$.ajax({type:'get', url: mUrl, dataType: 'html',async: false}).responseText
     let r;

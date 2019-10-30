@@ -1,0 +1,73 @@
+{% load staticfiles %}
+<nav class="navbar navbar-expand navbar-dark bg-dark static-top">
+<div class="navbar-brand">
+  <img src="{% static 'pizza/img/favicon.svg'%}" width="20px" alt="pizza">
+  <a class="navbar-brand mr-1" href="{% url 'index' %}"> Pizza Palermo </a>
+</div>
+<ul class="navbar-nav ml-auto ml-0 ml-md-3">
+  <li class="nav-item">
+    <a href="{% url 'index' %}" class="nav-link">
+      <i class="fa fa-list"> Menu </i>
+    </a>
+  </li>
+  <li class="nav-item">
+    <a href="{% url 'cart' %}" class="nav-link">
+      <i class="fas fa-cart-plus"> Cart </i>
+    </a>
+  </li>
+  <li class="nav-item">
+    <a href="{% url 'invoices' %}" class="nav-link">
+      <i class="fa fa-file-invoice-dollar"> Invoices </i>
+    </a>
+  </li>
+  {% if not user.is_authenticated %}
+  <li class="nav-item">
+    <a href="{% url 'register' %}" class="nav-link">
+      <i class="fa fa-user-plus">Register</i>
+    </a>
+  </li>
+  {% endif %}
+</ul>
+  <ul class="navbar-nav ml-auto mr-0 mr-md-3 my-2 my-md-0">
+    {% if request.user.is_authenticated %}
+    <li class="nav-item">
+      <a class="nav-link" href="{% url 'logout_view' %}">
+        Sign Out <i class="fa fa-sign-out-alt"></i>
+      </a>
+    </li>
+    {% else %}
+      <li class="nav-item dropdown bg-dark">
+        <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button"
+          aria-haspopup="true" aria-expanded="false">
+            <i class="fa fa-sign-in-alt"></i>
+        </a>
+        <div class="nav-item dropdown-menu dropdown-menu-right bg-dark">
+          <div class="dropdown-item">
+        <form action="{% url 'login_view' %}" method="post" class="form-inline form-group" >
+            {% csrf_token %}
+            <input name="username" type="text" class="form-control mr-sm-2"
+                placeholder="Type your username"/>
+            <input name="password" type="password" class="form-control mr-sm-2"
+                placeholder="Type your password"/>
+                <br/>
+            <button type="submit" value="Login"
+                class="btn btn-secondary d-block"><i class="fa fa-sign-in-alt"></i></button>
+        </form>
+      </div>
+      </div>
+      </li>
+      {% endif %}
+
+
+    </ul>
+</nav>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll("a").forEach( element => {
+      if (element.href==window.location.href){
+        element.parentElement.classList.add("active");
+      }
+    });
+  });
+
+</script>

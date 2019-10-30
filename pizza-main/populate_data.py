@@ -1,6 +1,7 @@
 from orders.models import *
 from django.contrib.auth.models import User
 import csv
+
 def run():
     ''' Load default data in database to use web application.
 
@@ -32,8 +33,9 @@ def load_data(file_location, model_name, model_fields):
         None
     '''
     with open(file_location) as f:
-        reader = csv.reader(line,delimiter=" ")
+        reader = csv.reader(f,delimiter=" ")
         line_count = 0
+        datum = {}
         for row in reader:
             for i, field in enumerate(model_fields):
                 datum[field]=row[i]

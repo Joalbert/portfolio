@@ -20,15 +20,15 @@ import datetime
 #-------------------------------------------
 class MenuView(View):
     def get(self, request):
-        return render(request,"orders/menu.html", menu_data())
+        return render(request,"orders/menu.html", self.menu_data())
 
-    def menu_data():
-        return {'regular_pizzas': menu_format(1,True), 'sicilian_pizzas': menu_format(2,True),
-                'subs': menu_format(3,True), 'pastas': menu_format(4,False),
-                'salads': menu_format(5,False), 'dinners':menu_format(6,True),
+    def menu_data(self):
+        return {'regular_pizzas': self.menu_format(1,True), 'sicilian_pizzas': self.menu_format(2,True),
+                'subs': self.menu_format(3,True), 'pastas': self.menu_format(4,False),
+                'salads': self.menu_format(5,False), 'dinners':self.menu_format(6,True),
                 "toppings":Topping.objects.all(), "extras": Extra.objects.all()}
 
-    def menu_format(meal_type, flag):
+    def menu_format(self, meal_type, flag):
         menu = []
         entire_menu = Menu.objects.filter(meal_type=meal_type).order_by("ingredient")
         for food in entire_menu:
