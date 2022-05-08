@@ -2,14 +2,8 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 
-from orders.models import (Cart, Order, Pizza, Sub)
+from orders.models import Cart
 
-
-class OrderForm(forms.ModelForm):
-    class Meta:
-        """docstring for Meta"""
-        model = Order
-        fields = "__all__"
 
 class CartForm(forms.ModelForm):
     class Meta:

@@ -8,7 +8,7 @@ from django.urls import reverse_lazy
 from django.db.models import Q
 from django.contrib.auth.models import User
 
-from orders.forms import (UserForm, OrderForm, CartForm, PizzaForm, SubForm)
+from orders.forms import (UserForm, CartForm, PizzaForm, SubForm)
 from orders.models import (Sub, Pizza, Pasta, Salad, DinnerPlatter, 
                         Menu, Extra, Topping, Cart, Order)
 
