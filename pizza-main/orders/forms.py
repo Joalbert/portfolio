@@ -1,35 +1,36 @@
-from .models import *
-from django.forms import ModelForm, Form
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
+
+from orders.models import (Cart, Order, Pizza, Sub)
 
 
-class ExtraForm(ModelForm):
-    class Meta:
-        """docstring for Meta"""
-        model = Extra
-        fields = "__all__"
-
-
-class ToppingForm(ModelForm):
-    class Meta:
-        """docstring for Meta"""
-        model = Topping
-        fields = "__all__"
-
-
-class OrderForm(ModelForm):
+class OrderForm(forms.ModelForm):
     class Meta:
         """docstring for Meta"""
         model = Order
         fields = "__all__"
 
-
-class MenuForm(ModelForm):
+class CartForm(forms.ModelForm):
     class Meta:
         """docstring for Meta"""
-        model = Menu
-        fields = "__all__"
+        model = Cart
+        fields = ["quantity"]
+
+
+class PizzaForm(forms.ModelForm):
+    class Meta:
+        """docstring for Meta"""
+        model = Cart
+        fields = ["quantity","toppings"]
+
+    
+
+class SubForm(forms.ModelForm):
+    class Meta:
+        """docstring for Meta"""
+        model = Cart
+        fields = ["quantity","extra"]
 
 class UserForm(UserCreationForm):
     username = forms.CharField(label = "User", max_length=30, required=True, help_text = None)

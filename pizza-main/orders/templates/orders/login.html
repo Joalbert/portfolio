@@ -1,0 +1,27 @@
+{% extends "orders/base.html" %}
+{# Load the tag library #}
+{% load bootstrap5 %}
+
+{# Load CSS and JavaScript #}
+{% bootstrap_css %}
+{% bootstrap_javascript %}
+
+{# Display django.contrib.messages as Bootstrap alerts #}
+{% bootstrap_messages %}
+
+{% block title %}
+    Login
+{% endblock %}
+
+{% block body %}
+    <form action="{% url 'orders:login' %}" method="POST" class="form-group" novalidate>
+        {% csrf_token %}
+        {% bootstrap_form form %}
+        {% buttons %}
+        <button type="submit" class="btn btn-dark">
+        Submit
+        </button>
+        {% endbuttons %}
+    </form>
+    <br />
+{% endblock %}

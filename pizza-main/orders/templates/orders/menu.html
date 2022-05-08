@@ -21,7 +21,7 @@
       <tbody>
         {% for regular_pizza in regular_pizzas%}
         <tr>
-          <td> {{regular_pizza}}</td>
+          <td> <a href="{% url 'orders:addcart' menu=regular_pizza.id %}">{{regular_pizza.ingredient}}<a></td>
           <td> {{ regular_pizza.meal_size|meal_size }}</td>
           <td> ${{regular_pizza.price}}</td>
         </tr>
@@ -42,7 +42,7 @@
       <tbody>
         {% for sicilian_pizza in sicilian_pizzas%}
         <tr>
-          <td> {{ sicilian_pizza}}</td>
+          <td> <a href="{% url 'orders:addcart' menu=sicilian_pizza.id %}">{{ sicilian_pizza.ingredient}}<a></td>
           <td> {{ sicilian_pizza.meal_size|meal_size }}</td>
           <td> ${{ sicilian_pizza.price}}</td>
         </tr>
@@ -69,9 +69,8 @@
     </thead>
     <tbody>
       {% for sub in subs%}
-      <tr data-toggle='modal' data-target='#orderForm' data-title='Sub / {{sub.ingredient}}' data-id='{{sub.id}}'
-       data-meal='{{sub.meal}}'>
-        <td> {{sub}}</td>
+      <tr>
+        <td> <a href="{% url 'orders:addcart' menu=sub.id %}">{{sub.ingredient}}</a></td>
         <td> {{sub.meal_size|sub_meal_size}}</td>
         <td> ${{sub.price}}</td>
       </tr>
@@ -108,9 +107,8 @@
       </thead>
       <tbody>
         {% for pasta in pastas%}
-        <tr data-toggle='modal' data-target='#orderForm' data-title='Pasta / {{pasta.ingredient}}' data-id='{{pasta.id}}'
-         data-meal='{{pasta.meal}}'>
-          <td> {{pasta.ingredient}}</td>
+        <tr>
+          <td> <a href="{% url 'orders:addcart' menu=pasta.id %}">{{pasta.ingredient}}</a></td>
           <td> ${{pasta.price}}</td>
         </tr>
         {% endfor %}
@@ -128,9 +126,8 @@
       </thead>
       <tbody>
         {% for salad in salads%}
-        <tr data-toggle='modal' data-target='#orderForm' data-title='Salad / {{salad.ingredient}}' data-id='{{salad.id}}'
-         data-meal='{{salad.meal}}'>
-          <td> {{salad.ingredient}}</td>
+        <tr>
+          <td> <a href="{% url 'orders:addcart' menu=salad.id %}">{{salad.ingredient}}</a></td>
           <td> ${{salad.price}}</td>
         </tr>
         {% endfor %}
@@ -150,7 +147,7 @@
       <tbody>
         {% for dinner in dinner_platters%}
         <tr>
-          <td> {{dinner.ingredient}}</td>
+          <td> <a href="{% url 'orders:addcart' menu=dinner.id %}">{{dinner.ingredient}}</a></td>
           <td> {{dinner.meal_size|dinner_size}} </td>
           <td> ${{dinner.price}} </td>
         </tr>

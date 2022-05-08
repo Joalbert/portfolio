@@ -1,0 +1,23 @@
+{% extends "orders/base.html" %}
+{# Load the tag library #}
+{% load bootstrap5 %}
+
+{# Load CSS and JavaScript #}
+{% bootstrap_css %}
+{% bootstrap_javascript %}
+
+{# Display django.contrib.messages as Bootstrap alerts #}
+{% bootstrap_messages %}
+
+{% block title %}
+    Logout
+{% endblock %}
+
+{% block body %}
+<p>Logged out</p>
+Thanks for spending some quality time with the Web site today.
+<br/>
+<a href="{% url 'orders:login' %}">Log in again</a>
+
+
+{% endblock %}

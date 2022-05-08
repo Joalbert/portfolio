@@ -6,20 +6,6 @@
 
 {% block body %}
 {% load orders_extras %}
-<div id="orderForm" class="modal fade" tabIndex="-1" role="dialog">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 id="modaltitle" class="modal-title"></h5>
-        <button class="close pull-right" data-dismiss="modal">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-      </div>
-    </div>
-  </div>
-</div>
 <table class="table table-striped">
 <thead>
   <tr>
@@ -30,24 +16,40 @@
   </tr>
 </thead>
 <tbody>
-{% for order in order_status_list %}
-  <tr id="meal" data-toggle="modal" data-target="#orderForm" data-order="{{order.id}}">
-    <td> <strong>{{order.menu_id.meal_type | meal_name }} </strong> <br />
-      {{ order.menu_id.ingredient.ingredient }} <br />
-      {{ order.menu_id.meal_size | meal_size }} <br />
-      {{order.extras}} {{order.topping}}
-      </td>
-    <td> {{order.quantity}}</td>
-    <td> {{order.menu_id.price}}</td>
-    <td> {{order.total}}</td>
+{% for item in carts %}
+  <tr>
+    <td> 
+      {% if item.menu.pizza %}
+        {{item.menu.pizza}}
+      {% endif %}
+      {% if item.menu.sub %}
+          Sub {{item.menu.sub}}
+      {% endif %}
+      {% if item.menu.salad %}
+          Salad {{item.menu.salad}}
+      {% endif %}
+      {% if item.menu.pasta %}
+        Pasta {{item.menu.pasta}}
+      {% endif %}
+      {% if item.menu.dinnerplatter %}
+        Dinner Platter {{item.menu.dinnerplatter}}
+      {% endif %}
+    </td>
+    <td> {{item.quantity}}</td>
+    <td> {{item.menu.price}}</td>
+    <td> {{item.sub_total_item}} 
+      <a href="{% url 'orders:updatecart' pk=item.id%}" role="button" class="btn btn-dark"> Edit Item</a>
+      <a href="{% url 'orders:deletecart' pk=item.id%}" role="button" class="btn btn-dark"> Delete Item</a>
+    </td>
   </tr>
 {% endfor %}
 </tbody>
-<tfoot> <tr><th></th><th></th><th>Total:</th> <th>{{ order_status_list | total }}</th></tfoot>
 </table>
-<form action="{% url 'orders:cart' %}" method="POST">
+{% if carts%}
+<form action="{% url 'orders:updateinvoices' pk=carts.0.order.id%}" method="post">
   {% csrf_token %}
-  <button type ="submit" name="operation" value="Add" class="btn btn-dark"><i class="fa fa-shopping-cart"></i> Submit </button>
+  <button type="submit" name="btn" value="your_value" class="btn btn-dark">Place Order</button>
 </form>
+{% endif%}
 <br />
 {% endblock %}

@@ -12,12 +12,12 @@
   </li>
   <li class="nav-item">
     <a href="{% url 'orders:cart' %}" class="nav-link">
-      <i class="fas fa-cart-plus"> Cart </i>
+      <i class="fas fa-cart-plus"> Shopping Cart </i>
     </a>
   </li>
   <li class="nav-item">
     <a href="{% url 'orders:invoices' %}" class="nav-link">
-      <i class="fa fa-file-invoice-dollar"> Invoices </i>
+      <i class="fa fa-file-invoice-dollar"> Orders </i>
     </a>
   </li>
   {% if not user.is_authenticated %}
@@ -35,31 +35,8 @@
         Sign Out <i class="fa fa-sign-out-alt"></i>
       </a>
     </li>
-    {% else %}
-      <li class="nav-item dropdown bg-dark">
-        <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button"
-          aria-haspopup="true" aria-expanded="false">
-            <i class="fa fa-sign-in-alt"></i>
-        </a>
-        <div class="nav-item dropdown-menu dropdown-menu-right bg-dark">
-          <div class="dropdown-item">
-        <form action="{% url 'orders:login' %}" method="post" class="form-inline form-group" >
-            {% csrf_token %}
-            <input name="username" type="text" class="form-control mr-sm-2"
-                placeholder="Type your username"/>
-            <input name="password" type="password" class="form-control mr-sm-2"
-                placeholder="Type your password"/>
-                <br/>
-            <button type="submit" value="Login"
-                class="btn btn-secondary d-block"><i class="fa fa-sign-in-alt"></i></button>
-        </form>
-      </div>
-      </div>
-      </li>
-      {% endif %}
-
-
-    </ul>
+    {% endif %}
+  </ul>
 </nav>
 <script>
 document.addEventListener('DOMContentLoaded', () => {

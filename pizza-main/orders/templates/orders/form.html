@@ -1,32 +1,62 @@
-{% load orders_extras%}
-{% load widget_tweaks %}
-<div id="input" class="row" style="padding:10px">
-  <img src='{{order.menu_id.photo.url}}' class="col-md-6" alt='{{order.menu_id.meal_type|meal_name}} {{order.menu_id.ingredient.ingredient}}'>
-  <div id="order-detail" class="col-md-6">
-    <h5 id="meal" data-order="{{id}}">{{order.menu_id.meal_type|meal_name}}</h5>
-    <p id="ingredient">{{order.menu_id.ingredient.ingredient}}</p>
-    <p id="ingredient">{{order.menu_id.meal_size|meal_size}}</p>
-    <form action="{% url 'edit-order' order_status=id %}" method="POST"
-          class="form-group" novalidate>
-        {% csrf_token %}
-        {{ form.quantity|add_class:"form-control"}}
-      <p>Price: <span id="price">{{order.menu_id.price}}</span></p>
-      <h6 class="font-weight-bold">Total: <span id="total"> {{order.total}}</span></h6>
-        {% if order.menu_id.topping_flag %}
-          {{form.topping|add_class:"form-control"}}
-          <br/>
-          <br/>
-        {% endif %}
-        {% if order.menu_id.extras_flag %}
-          {{form.extras|add_class:"form-control"}}
-          <br/>
-        {% endif %}
-      <button type ="submit" name="operation" class="btn btn-outline-primary" value="Edit"
-              style="padding:10px;"><i class="fa fa-pen" aria-hidden="true"></i> Edit </button>
-      <button type ="submit" name="operation" class="btn btn-outline-primary" value="Delete"
-              style="padding:10px;"><i class="fa fa-trash"></i> Delete </button>
-    </form>
+{% extends "orders/base.html" %}
+{# Load the tag library #}
+{% load bootstrap5 %}
+{% load orders_extras %}
+{# Load CSS and JavaScript #}
+{% bootstrap_css %}
+{% bootstrap_javascript %}
 
-  <div>
-</div>
-<div id="order-{{id}}"></div>
+{# Display django.contrib.messages as Bootstrap alerts #}
+{% bootstrap_messages %}
+
+{% block title %}
+    Register
+{% endblock %}
+
+{% block body %}
+    <div class="container">
+      <div class="row">
+        <div class="col-md-6 col-sm-12">
+          <img src="{{menu.photo.url}}" class="img-fluid" alt="{{menu.ingredient}}" width="300"/>
+        </div>
+        <div class="col-md-6 col-sm-12">
+          {% if menu.pizza %}
+          <h1>{{menu.pizza.meal_type|get_pizza_type}}</h1>
+          <h3> {{menu.ingredient}} </h3>
+          <h4>{{menu.pizza.meal_size|meal_size}}</h3>
+          {% endif %}
+          {% if menu.sub %}
+          <h1>Sub</h1>
+          <h3> {{menu.ingredient}} </h3>
+          <h4>{{menu.sub.meal_size|sub_meal_size}}</h3>
+          {% endif %}
+          {% if menu.salad %}
+          <h1>Salad</h1>
+          <h3> {{menu.ingredient}} </h3>
+          {% endif %}
+          {% if menu.pasta %}
+          <h1>Pasta</h1>
+          <h3> {{menu.ingredient}} </h3>
+          {% endif %}
+          {% if menu.dinnerplatter %}
+          <h1>Dinner Platter</h1>
+          <h3> {{menu.ingredient}} </h3>
+          <h4>{{menu.dinnerplatter.meal_size|dinner_size}}</h3>
+          {% endif %}    
+          <form method="POST" class="form-group" novalidate>
+            {% csrf_token %}
+            {% if form %}
+              {% bootstrap_form form %}
+            {% endif %}
+            {% buttons %}
+            <button type="submit" class="btn btn-dark">
+            Submit
+            </button>
+            {% endbuttons %}
+          </form>
+          <br />
+        </div>
+      </div>  
+    </div>
+    
+{% endblock %}
