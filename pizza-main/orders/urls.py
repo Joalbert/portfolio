@@ -1,20 +1,25 @@
-from django.urls import path
+from audioop import reverse
+from re import template
+from django.shortcuts import redirect
+from django.urls import path, reverse_lazy
 from . import views
 from django.conf import settings
 from django.conf.urls.static import static
-from .views import MenuView, OrderFood, Register,Cart, Invoice, EditOrder, OrderTable
+from .views import MenuView, Register,Cart, Invoice
+
+from django.contrib.auth.views import LoginView, LogoutView
+app_name = "orders"
 
 urlpatterns = [
+    path("login/", LoginView.as_view(template_name = "orders/login.html"), 
+                                    name = "login"),
+    path("logout/", LogoutView.as_view(template_name = "orders/logout.html"), 
+                                    name="logout"),
+    path("register/", Register.as_view(), name="register"),
+    
     path("", MenuView.as_view(), name="index"),
-    path("food/<int:meal>/<int:ingredient_desc>", OrderFood.as_view(), name="food"),
-    path("cart/order/<int:order_status>", EditOrder.as_view(), name="edit-order"),
-    path("price/<int:meal>/<int:ingredient>/<int:size>", views.food_price, name="price"),
-    path("register", Register.as_view(), name="register"),
     path("cart/", Cart.as_view(), name="cart"),
-    path("invoices/order-table/<int:order>", OrderTable.as_view(), name="order-table"),
     path("invoices/", Invoice.as_view(), name="invoices"),
-    path("login_view", views.login_form, name="login_view"),
-    path("logout_view", views.logout_form, name="logout_view"),
     ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

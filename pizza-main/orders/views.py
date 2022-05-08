@@ -1,302 +1,71 @@
-from django.http import HttpResponse, HttpResponseRedirect, Http404
-from django.shortcuts import render, render_to_response, get_object_or_404
-from django.contrib.auth import authenticate, login, logout
+from typing import Dict, Any 
+
+from django.views.generic import ListView, CreateView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.urls import reverse_lazy
+from django.db.models import Q
 from django.contrib.auth.models import User
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import UserCreationForm
-from django.urls import reverse
-from django.db.models import Sum
-from django.views.generic import ListView, UpdateView, CreateView
-from django.views import View
-from django.core.paginator import Paginator
-from .models import *
-from .forms import *
-import json
-import datetime
+
+from orders.forms import (UserForm, OrderForm)
+from orders.models import (Sub, Pizza, Pasta, Salad, DinnerPlatter, 
+                        Menu, Extra, Topping, Chart, Order)
+
 #-------------------------------------------
 #               Views
 #-------------------------------------------
-class MenuView(View):
-    def get(self, request):
-        return render(request,"orders/menu.html", self.menu_data())
+class MenuView(LoginRequiredMixin, ListView):
+    template_name = "orders/menu.html"
+    queryset = Menu
+    context_object_name = "menu"
+    login_url = reverse_lazy("orders:login")
 
-    def menu_data(self):
-        return {'regular_pizzas': self.menu_format(1,True), 'sicilian_pizzas': self.menu_format(2,True),
-                'subs': self.menu_format(3,True), 'pastas': self.menu_format(4,False),
-                'salads': self.menu_format(5,False), 'dinners':self.menu_format(6,True),
-                "toppings":Topping.objects.all(), "extras": Extra.objects.all()}
+    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+        REGULAR_PIZZA = 0
+        SICILIAN_PIZZA = 1
 
-    def menu_format(self, meal_type, flag):
-        menu = []
-        entire_menu = Menu.objects.filter(meal_type=meal_type).order_by("ingredient")
-        for food in entire_menu:
-            ingredients = Menu.objects.filter(meal_type=meal_type, ingredient = food.ingredient)
-            ingredient_price = {}
-            for ingredient in ingredients:
-                if flag:
-                    if ingredient.meal_size == 1:
-                        ingredient_price["small_price"] = ingredient.price
-                    if ingredient.meal_size == 2:
-                        ingredient_price["large_price"] =  ingredient.price
-                elif not flag and ingredient.meal_size == 3:
-                    ingredient_price["price"] = ingredient.price
-            if flag:
-                result=dict()
-                for k in ingredient_price:
-                    result[k]=ingredient_price[k]
-                result["ingredient"]=food.ingredient.__str__()
-                result["id"]=food.ingredient.id
-                result["topping"]=food.topping_flag
-                result["extra"]=food.extras_flag
-                result["meal"]=meal_type
-                if result not in menu:
-                    menu.append(result)
-            else:
-                menu.append({"id":food.ingredient.id, "ingredient": food.ingredient.__str__(),
-                "price":ingredient_price["price"], "meal": meal_type, 'topping': food.extras_flag,
-                'topping': food.topping_flag})
-        return menu
+        context = super().get_context_data(**kwargs)
+        context["regular_pizzas"] = Pizza.objects.filter(meal_type=REGULAR_PIZZA)
+        context["sicilian_pizzas"] = Pizza.objects.filter(meal_type=SICILIAN_PIZZA) 
+        context["subs"] = Sub.objects.all()  
+        context["salads"] = Salad.objects.all()
+        context["pastas"] = Pasta.objects.all()
+        context["dinner_platters"] = DinnerPlatter.objects.all()
+        context["toppings"] = Topping.objects.all()
+        context["extras"] = Extra.objects.all()
 
-class OrderFood(View):
-    def get(self, request, meal, ingredient_desc):
-        """Short summary.
-
-        Parameters
-        ----------
-        request : type
-            Description of parameter `request`.
-        meal : type
-            Description of parameter `meal`.
-        ingredient_desc : type
-            Description of parameter `ingredient_desc`.
-
-        Returns
-        -------
-        type
-            Description of returned object.
-
-        """
-        if not request.user.is_authenticated:
-            return HttpResponse(json.dumps({"login": False}))
-        menu_rows = Menu.objects.filter(meal_type=meal, ingredient=ingredient_desc)
-        sizes, photos = [] , []
-        for menu in menu_rows:
-            sizes.append(menu.SIZE[menu.meal_size-1])
-            photos.append(menu.photo.url)
-        return render(request,"orders/order.html", {'sizes': sizes, 'photo': photos[0],
-            'meal':Menu.MEAL_TYPE[meal-1][1], 'ingredient': Ingredient.objects.get(id=ingredient_desc).__str__(),
-            'ingredient_id':ingredient_desc, 'meal_id': meal, 'toppings':Topping.objects.all(),
-            'extras':Extra.objects.all(), 'topping_flg':menu_rows[0].topping_flag,
-            'extra_flg': menu_rows[0].extras_flag})
-
-    def post(self, request, meal, ingredient_desc):
-        """Process form and send notification as a response to user interface.
-
-        Parameters
-        ----------
-        request : request
-            request information from HTTP petition.
-        meal : integer
-            meal type id in menu model.
-        ingredient_desc : integer
-            ingredient id in menu model.
-
-        Returns
-        -------
-        render
-            Notification regarding form.
-
-        """
-        # Validation of form
-        try:
-            data = self.get_data(request.POST.copy(), ingredient_desc,meal)
-        except Menu.DoesNotExist:
-            return inflate_message_user("Please, Select size for your order!","alert alert-danger")
-        except ValueError: # Not quantity Selected
-            return inflate_message_user("Please, Select quantity for your order!","alert alert-danger")
-        else:
-            # Process data
-            added = self.add_items(data)
-            return self.add_order(data) if not added[0] else added[1]
-
-    def get_data(self, data, ingredient_desc, meal):
-        menu = Menu.objects.get(ingredient=ingredient_desc,meal_type=meal,
-                                    meal_size=data['size'])
-        total = get_total(menu.price, int(data["quantity"]), get_extra_prices(data))
-        # Prepare for order form
-        data.update({"user_id": self.request.user.id, "menu_id": menu.id, "status": Order_Status.STATUS[0][0],
-                     "total": total, "extras":get_extras_name(data), "topping": get_topping_name(data)})
-        return data
-
-    def add_order(self, data):
-        my_order = Order_StatusForm(data)
-        if my_order.is_valid():
-            my_order.save()
-            return inflate_message_user("Added to chart!","alert alert-primary")
-        else:
-            return inflate_message_user(format_error_to_message(my_order.errors),"alert alert-danger")
-
-    def add_items(self, data):
-        try:
-            order = Order_Status.objects.get(menu_id=data['menu_id'], status=1)
-        except Order_Status.DoesNotExist:
-            return (False, "")
-        try:
-            order.quantity = order.quantity + int(data['quantity'])
-            order.total = order.total + data['total']
-            if data['extras']:
-                order.extras = f"{order.extras} {data['extras']}"
-            if data['topping']:
-                order.topping = f"{order.topping} {data['topping']}"
-            order.full_clean()
-        except ValidationError as e:
-            return (False, "")
-        else:
-            order.save()
-            return (True, inflate_message_user("Added to chart!","alert alert-primary"))
+        return context
 
 class Register(CreateView):
     template_name = 'orders/register.html'
     model = User
     form_class = UserForm
-    success_url = "/"
+    success_url = reverse_lazy("orders:index")
 
 class Cart(LoginRequiredMixin, ListView):
-    login_url = 'register'
-    queyset = Order_Status
+    login_url = reverse_lazy('orders:login')
     template_name = "orders/shopping_cart.html"
 
     def get_queryset(self):
-        return Order_Status.objects.filter(status = 1, user_id = self.request.user)
-
-    def post(self,request, *args, **kwargs):
-        order_open = Order_Status.objects.filter(status = 1, user_id = self.request.user)
-        order_tot = Order_Status.objects.filter(status = 1, user_id = self.request.user).aggregate(Sum('total'))
-        new_order = Order()
-        new_order.order_total = round(order_tot['total__sum'],2)
-        new_order.order_date = datetime.datetime.now()
-        new_order.status=2
-        new_order.user = self.request.user
-        new_order.save()
-        for order in order_open:
-            order.status=2
-            order.order_id = new_order
-            order.save()
-        return HttpResponseRedirect(reverse('cart'))
-
-class EditOrder(LoginRequiredMixin, View):
-    login_url = 'register'
-    template_name = "orders/form.html"
-
-    def form_valid(self, form):
-        return super().form_valid(form)
-
-    def get(self, request, order_status):
-        try:
-            order = Order_Status.objects.get(id = order_status)
-        except Order_Status.DoesNotExist:
-            return Http404("Order does not exist!")
-        else:
-            return render(request,"orders/form.html",{"form": Order_StatusForm(instance=order),
-                          "id":order_status, "order": order})
-
-    def post(self, request, order_status):
-        order = Order_Status.objects.get(id=order_status)
-        if request.POST["operation"] == "Edit":
-            order.quantity = request.POST["quantity"]
-            order.total = int(order.quantity) * order.menu_id.price
-            order.topping = request.POST.get("topping","")
-            try:
-                order.full_clean()
-            except ValidationError as e:
-                return inflate_message_user(format_error_to_message(e),"alert alert-danger")
-            else:
-                order.save()
-                return inflate_message_user("Added to chart!","alert alert-primary")
-        elif request.POST["operation"] == "Delete":
-            order.delete()
-            return inflate_message_user("Successful Deletion!","alert alert-primary")
-        else:
-            raise Http404()
-
-class OrderTable(LoginRequiredMixin, ListView):
-    login_url = 'register'
-    queyset = Order_Status
-    template_name = "orders/order_table.html"
-
-    def get_queryset(self, ):
-        return Order_Status.objects.filter(order_id = self.kwargs['order'], user_id = self.request.user)
+        STATUS_OPEN = 0
+        STATUS_RELEASE = 1
+        STATUS_CANCELLED = 2  
+        return Chart.objects.filter(Q(user=self.request.user)&~Q(status=STATUS_CANCELLED))
 
 class Invoice(LoginRequiredMixin, ListView):
     login_url = 'register'
-    queyset = Order
     template_name = "orders/invoices.html"
-    ordering =['-id']
     paginate_by = 3
 
     def get_queryset(self):
-        return Order.objects.filter(status = 2, user_id = self.request.user)
+        STATUS_PAID = 1
+        return Order.objects.filter(status = STATUS_PAID, user_id = self.request.user)
 
+class AddItemView(LoginRequiredMixin, CreateView):
+    login_url = reverse_lazy('orders:login')
+    template_name = "orders/shopping_cart.html"
 
-def food_price(request, meal, ingredient, size):
-    """Short summary.
-
-    Parameters
-    ----------
-    request : type
-        Description of parameter `request`.
-    meal : type
-        Description of parameter `meal`.
-    ingredient : type
-        Description of parameter `ingredient`.
-    size : type
-        Description of parameter `size`.
-
-    Returns
-    -------
-    type
-        Description of returned object.
-
-    """
-    return HttpResponse(Menu.objects.get(meal_type=meal, ingredient=ingredient, meal_size=size).price)
-
-def login_form(request):
-    """Short summary.
-
-    Parameters
-    ----------
-    request : type
-        Description of parameter `request`.
-
-    Returns
-    -------
-    type
-        Description of returned object.
-
-    """
-    user = authenticate(request, username=request.POST["username"], password=request.POST["password"])
-    if user is not None:
-        login(request, user)
-        return HttpResponseRedirect(reverse("index"))
-    else:
-        return HttpResponse("User is not authenticated! Please, try again!")
-
-def logout_form(request):
-    """Short summary.
-
-    Parameters
-    ----------
-    request : type
-        Description of parameter `request`.
-
-    Returns
-    -------
-    type
-        Description of returned object.
-
-    """
-    logout(request)
-    return HttpResponseRedirect(reverse("index"))
-
-
+    def get_queryset(self):
+        STATUS_OPEN = 0
+        STATUS_RELEASE = 1
+        STATUS_CANCELLED = 2  
+        return Chart.objects.filter(Q(user=self.request.user)&~Q(status=STATUS_CANCELLED))

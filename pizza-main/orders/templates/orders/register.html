@@ -1,15 +1,27 @@
 {% extends "orders/base.html" %}
+{# Load the tag library #}
+{% load bootstrap5 %}
+
+{# Load CSS and JavaScript #}
+{% bootstrap_css %}
+{% bootstrap_javascript %}
+
+{# Display django.contrib.messages as Bootstrap alerts #}
+{% bootstrap_messages %}
 
 {% block title %}
     Register
 {% endblock %}
 
 {% block body %}
-{% load crispy_forms_tags %}
-    <form action="{% url 'register' %}" method="POST" class="form-group" novalidate>
+    <form action="{% url 'orders:register' %}" method="POST" class="form-group" novalidate>
         {% csrf_token %}
-        {{ form|crispy }}
-        <button type ="submit" name="operation" value="Add" class="btn btn-lg btn-dark d-block mx-auto" style="padding:10px;">Register</button>
+        {% bootstrap_form form %}
+        {% buttons %}
+        <button type="submit" class="btn btn-dark">
+        Submit
+        </button>
+        {% endbuttons %}
     </form>
     <br />
 {% endblock %}

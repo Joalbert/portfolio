@@ -4,13 +4,6 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 
 
-class IngredientForm(ModelForm):
-    class Meta:
-        """docstring for Meta"""
-        model = Ingredient
-        fields = "__all__"
-
-
 class ExtraForm(ModelForm):
     class Meta:
         """docstring for Meta"""
@@ -37,19 +30,6 @@ class MenuForm(ModelForm):
         """docstring for Meta"""
         model = Menu
         fields = "__all__"
-
-
-class AddChartForm(Form):
-    quantity = forms.IntegerField(min_value=0)
-    size = forms.ChoiceField(choices=Menu.SIZE)
-    
-
-class Order_StatusForm(ModelForm):
-    class Meta:
-        """docstring for Meta"""
-        model = Order_Status
-        fields = "__all__"
-
 
 class UserForm(UserCreationForm):
     username = forms.CharField(label = "User", max_length=30, required=True, help_text = None)
