@@ -8,8 +8,8 @@ class FoodAdmin(admin.ModelAdmin):
     list_editable=("ingredient","price")
 
 class CartAdmin(admin.ModelAdmin):
-    list_display = ("id","menu", "user")
-
+    list_display = ("id","menu", "user", "order","status")
+    list_editable = ("status",)
 class OrderAdmin(admin.ModelAdmin):
     list_display = ("id","status", "user")
     list_editable =("status", "user")

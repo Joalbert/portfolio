@@ -5,46 +5,13 @@
 {% endblock %}
 
 {% block body %}
+{% if messages %}
+  {% for message in messages %}
+    {{ message }}
+  {% endfor %}
+{% endif %}
 {% load orders_extras %}
-<table class="table table-striped">
-<thead>
-  <tr>
-    <th> Food </th>
-    <th> Quantity </th>
-    <th> Unit Price </th>
-    <th> Total </th>
-  </tr>
-</thead>
-<tbody>
-{% for item in carts %}
-  <tr>
-    <td> 
-      {% if item.menu.pizza %}
-        {{item.menu.pizza}}
-      {% endif %}
-      {% if item.menu.sub %}
-          Sub {{item.menu.sub}}
-      {% endif %}
-      {% if item.menu.salad %}
-          Salad {{item.menu.salad}}
-      {% endif %}
-      {% if item.menu.pasta %}
-        Pasta {{item.menu.pasta}}
-      {% endif %}
-      {% if item.menu.dinnerplatter %}
-        Dinner Platter {{item.menu.dinnerplatter}}
-      {% endif %}
-    </td>
-    <td> {{item.quantity}}</td>
-    <td> {{item.menu.price}}</td>
-    <td> {{item.sub_total_item}} 
-      <a href="{% url 'orders:updatecart' pk=item.id%}" role="button" class="btn btn-dark"> Edit Item</a>
-      <a href="{% url 'orders:deletecart' pk=item.id%}" role="button" class="btn btn-dark"> Delete Item</a>
-    </td>
-  </tr>
-{% endfor %}
-</tbody>
-</table>
+{% include "orders/item_carts.html" with carts=carts editable=True total=total%}
 {% if carts%}
 <form action="{% url 'orders:updateinvoices' pk=carts.0.order.id%}" method="post">
   {% csrf_token %}

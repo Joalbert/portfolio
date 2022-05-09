@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 
-from orders.models import Cart
+from orders.models import Cart, Topping
 
 
 class CartForm(forms.ModelForm):
@@ -16,9 +16,19 @@ class PizzaForm(forms.ModelForm):
     class Meta:
         """docstring for Meta"""
         model = Cart
-        fields = ["quantity","toppings"]
+        fields = ["quantity"]
 
+
+class PizzaToppingsForm(forms.ModelForm):
     
+    class Meta:
+        """docstring for Meta"""
+        model = Cart
+        fields = ["quantity","toppings"]
+        widgets = {
+            'toppings' : forms.CheckboxSelectMultiple(),   
+        }
+
 
 class SubForm(forms.ModelForm):
     class Meta:

@@ -5,7 +5,7 @@ from django.contrib.auth.views import LoginView, LogoutView
 
 from orders.views import (MenuView, Register,CartView,
         AddItemCartView, UpdateItemCartView, DeleteItemCartView,
-        OrderView, UpdateOrderView)
+        OrderView, UpdateOrderView, DetailOrderView)
 
 app_name = "orders"
 
@@ -24,6 +24,7 @@ urlpatterns = [
     path("cart/<int:pk>/delete", DeleteItemCartView.as_view(), name="deletecart"),
     path("orders/", OrderView.as_view(), name="invoices"),
     path("orders/<int:pk>/update", UpdateOrderView.as_view(), name="updateinvoices"),
+    path("orders/<int:pk>/detail", DetailOrderView.as_view(), name="detailinvoices"),
     ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
