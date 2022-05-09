@@ -26,5 +26,6 @@ urlpatterns = [
     path("orders/<int:pk>/update", UpdateOrderView.as_view(), name="updateinvoices"),
     path("orders/<int:pk>/detail", DetailOrderView.as_view(), name="detailinvoices"),
     ]
+    
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
