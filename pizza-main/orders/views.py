@@ -1,7 +1,7 @@
 from decimal import Decimal
 
 from django.shortcuts import get_object_or_404, render
-from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView, TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.db.models import Q
@@ -21,10 +21,8 @@ class Register(CreateView):
     
     success_url = reverse_lazy("orders:index")
 
-class MenuView(LoginRequiredMixin, ListView):
+class MenuView(LoginRequiredMixin, TemplateView):
     template_name = "orders/menu.html"
-    queryset = Menu
-    context_object_name = "menu"
     login_url = reverse_lazy("orders:login")
 
     def get_context_data(self, **kwargs):
@@ -126,7 +124,7 @@ class AddItemCartView(LoginRequiredMixin, CreateView):
                 return HttpResponseRedirect(self.success_url)
             # Create item in cart
             if (not is_pizza(data["menu"]) and not is_sub(data["menu"])):
-                cart.objects.create(**data)
+                Cart.objects.create(**data)
                 messages.add_message(request, messages.INFO, f"¡{data['menu']} added!")
                 return HttpResponseRedirect(self.success_url)
         return super().post(request, *args, **kwargs)    
@@ -176,9 +174,15 @@ class UpdateItemCartView(LoginRequiredMixin, UpdateView):
     def form_valid(self, form):
         form.instance.sub_total_item=Decimal(form.instance.quantity)*Decimal(form.instance.menu.price)
         if(is_sub(form.instance.menu)):
-            for extra in form.instance.extra.all():
-                form.instance.sub_total_item +=Decimal(form.instance.quantity)*Decimal(extra.price)        
-        form.save()
+            for extra in self.request.POST['extra']:
+                extra_qs = get_object_or_404(Extra, id=extra) 
+                form.instance.sub_total_item +=Decimal(form.instance.quantity)*Decimal(extra_qs.price)
+            text = (
+                    f"food price {form.instance.menu.price} "
+                    f"quantity {form.instance.quantity} "
+                    f"total: {form.instance.sub_total_item} " 
+                )
+            return super().form_valid(form)        
         return super().form_valid(form)
 
 class DeleteItemCartView(LoginRequiredMixin, DeleteView):
@@ -218,6 +222,7 @@ class UpdateOrderView(LoginRequiredMixin, UpdateView):
     login_url = reverse_lazy("orders:login")
     model = Order
     fields = ("id",)
+    http_methods = ["post"]
 
     def get_queryset(self):
         STATUS_DRAFT = 0

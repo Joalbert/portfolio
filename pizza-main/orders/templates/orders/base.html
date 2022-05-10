@@ -7,7 +7,6 @@
 {% bootstrap_javascript %}
 
 {# Display django.contrib.messages as Bootstrap alerts #}
-{% bootstrap_messages %}
 
     <head>
         <meta charset="utf-8">
@@ -22,6 +21,7 @@
     <header>
       {% include "orders/navigation.html"%}
     </header>
+    {% bootstrap_messages %}
     <div role="main" class="container d-block mx-auto">
         {% block body %}
         {% endblock %}

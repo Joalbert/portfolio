@@ -5,11 +5,6 @@
 {% endblock %}
 
 {% block body %}
-{% if messages %}
-  {% for message in messages %}
-    {{ message }}
-  {% endfor %}
-{% endif %}
 {% load orders_extras %}
 {% include "orders/item_carts.html" with carts=carts editable=True total=total%}
 {% if carts%}
