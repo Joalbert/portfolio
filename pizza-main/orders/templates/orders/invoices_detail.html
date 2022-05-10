@@ -1,0 +1,14 @@
+{% extends "orders/base.html" %}
+
+{% block title %}
+    My Invoices
+{% endblock %}
+
+{% block body %}
+{% load orders_extras %}
+<h1>Order: {{object.id}}</h1>
+<h4>Date: {{object.order_date}}</h4>
+<h4>Status: {{object.status}}</h4>
+
+{% include "orders/item_carts.html" with carts=carts editable=False total=total%}   
+{% endblock %}

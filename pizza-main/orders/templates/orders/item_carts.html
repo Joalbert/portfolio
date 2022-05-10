@@ -1,0 +1,70 @@
+<table class="table table-striped">
+    <thead>
+      <tr>
+        <th> Food </th>
+        <th> Quantity </th>
+        <th> Unit Price </th>
+        <th> Total </th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for item in carts %}
+      <tr>
+        <td> 
+          {% if item.menu.pizza %}
+            {{item.menu.pizza}} 
+            {% for top in item.toppings.all %}
+              {% if forloop.first %}
+              Toppings: 
+              {% endif %}
+              {{top}}
+              {% if not forloop.last %}
+              ,
+              {% endif %}
+            {%endfor%}
+          {% endif %}
+          {% if item.menu.sub %}
+              Sub {{item.menu.sub}} 
+            {% for extra in item.extra.all %}
+            {% if forloop.first %}
+            Extras: 
+            {% endif %}
+            {{extra}}
+            {% if not forloop.last %},
+            {% endif %}
+            {% endfor %}
+          {% endif %}
+          {% if item.menu.salad %}
+              Salad {{item.menu.salad}}
+          {% endif %}
+          {% if item.menu.pasta %}
+            Pasta {{item.menu.pasta}}
+          {% endif %}
+          {% if item.menu.dinnerplatter %}
+            Dinner Platter {{item.menu.dinnerplatter}}
+          {% endif %}
+        </td>
+        <td> {{item.quantity}}</td>
+        <td> ${{item.menu.price}}</td>
+        <td> ${{item.sub_total_item}} 
+          {% if editable %}
+          <a href="{% url 'orders:updatecart' pk=item.id%}" role="button" class="btn btn-dark"> Edit Item</a>
+          <a href="{% url 'orders:deletecart' pk=item.id%}" role="button" class="btn btn-dark"> Delete Item</a>
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+    {%if total%}
+    <tfoot>
+      <tr>
+        <td></td>
+        <td></td>
+        <td>    
+          <span style="font-weight:bold;">Total </span> 
+        </td>
+        <td>{{total}}</td>
+      </tr>
+    </tfoot>
+    {% endif %}
+    </table>
