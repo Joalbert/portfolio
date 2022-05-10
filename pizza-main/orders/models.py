@@ -105,8 +105,8 @@ class Cart(models.Model):
     status = models.PositiveSmallIntegerField(choices=STATUS, default=STATUS_OPEN)
     sub_total_item = models.DecimalField(max_digits=6, decimal_places=2, 
                                         default=INITIAL_COST)
-    toppings = models.ManyToManyField(Topping, related_name="CartTopping")
-    extra = models.ManyToManyField(Extra, related_name="CartExtra")
+    toppings = models.ManyToManyField(Topping, related_name="CartTopping", blank=True)
+    extra = models.ManyToManyField(Extra, related_name="CartExtra", blank=True)
     
     def __str__(self):
         return f"{self.order} {self.user} {self.menu} {self.status} " \
@@ -114,3 +114,10 @@ class Cart(models.Model):
 
     def get_absolute_url(self):
         return reverse("orders:cart")
+
+    def clean(self):
+        if self.quantity<0:
+            raise ValidationError({'quantity':["It should be bigger than zero!",]})
+        if self.sub_total_item<0:
+            raise ValidationError({'sub_total_item':["It should be bigger than zero!",]})
+        return super().clean()

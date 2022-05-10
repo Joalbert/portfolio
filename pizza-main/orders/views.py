@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -80,7 +82,7 @@ class AddItemCartView(LoginRequiredMixin, CreateView):
             # Complete fields for Cart
             data["menu"] = get_object_or_404(Menu,pk=self.kwargs.get("menu",0))
             data["user"] = self.request.user
-            #data["sub_total_item"] = Decimal(data["menu"].price) * Decimal(int(data["quantity"]))
+            data["sub_total_item"] = Decimal(data["menu"].price) * Decimal(int(data["quantity"]))
             
             # Find order or create if not any in Draft status
             try:
@@ -92,7 +94,7 @@ class AddItemCartView(LoginRequiredMixin, CreateView):
             
             # Check if food has toppings and if a valid option
             data_checkboxes = request.POST.copy() 
-            toppings = data_checkboxes.pop("toppings",0)
+            toppings = data_checkboxes.pop("toppings",[])
             if(is_pizza(data["menu"])):
                 if data["menu"].pizza.amount_toppings==0:
                     cart = Cart.objects.create(**data)
@@ -112,12 +114,12 @@ class AddItemCartView(LoginRequiredMixin, CreateView):
                                  f"Please, check your order."))
                     return render(request,self.template_name, {"form": form, "menu": data["menu"] }) 
             # Check if food has extras and if a valid option
-            extras = data_checkboxes.pop("extra",0)
+            extras = data_checkboxes.pop("extra",[])
             if(is_sub(data["menu"])):
                 cart = Cart.objects.create(**data)
                 for extra in extras:
                     extra_instance = Extra.objects.get(id=extra)
-                    cart.sub_total_item += extra_instance.price 
+                    cart.sub_total_item += Decimal(data["quantity"])*extra_instance.price 
                     cart.extra.add(extra_instance)
                 cart.save()
                 messages.add_message(request, messages.INFO, f"¡{data['menu']} added!")
@@ -170,6 +172,14 @@ class UpdateItemCartView(LoginRequiredMixin, UpdateView):
         if (is_sub(food)):
             return SubForm
         return CartForm
+
+    def form_valid(self, form):
+        form.instance.sub_total_item=Decimal(form.instance.quantity)*Decimal(form.instance.menu.price)
+        if(is_sub(form.instance.menu)):
+            for extra in form.instance.extra.all():
+                form.instance.sub_total_item +=Decimal(form.instance.quantity)*Decimal(extra.price)        
+        form.save()
+        return super().form_valid(form)
 
 class DeleteItemCartView(LoginRequiredMixin, DeleteView):
     template_name = "orders/form.html"

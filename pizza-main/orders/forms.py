@@ -35,6 +35,9 @@ class SubForm(forms.ModelForm):
         """docstring for Meta"""
         model = Cart
         fields = ["quantity","extra"]
+        widgets = {
+            'extra' : forms.CheckboxSelectMultiple(),   
+        }
 
 class UserForm(UserCreationForm):
     username = forms.CharField(label = "User", max_length=30, required=True, help_text = None)
