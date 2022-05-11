@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.urls import reverse_lazy 
 from django.test import tag
 
-from orders.models import (Extra, Topping, Menu, Pizza, 
+from orders.models import (Extra, Topping, Pizza, 
                         Sub, Salad, Pasta, DinnerPlatter,   
                         Order, Cart)
 from orders.forms import (CartForm, PizzaForm, PizzaToppingsForm, SubForm)
@@ -102,9 +102,7 @@ class RestaurantTest(TestCase):
         self.assertIn("menu",response.context)
         self.assertEqual(int(response.context["menu"].id),food.id)
         self.assertIsInstance(response.context["form"],foodForm)
-        ## TODO ADD CHECK FOR INITIAL DATA
-        #print(int(response.context["form"].fields["quantity"].initial))
-        # self.assertEqual(response.context["form"].fields["quantity"].initial, 1)     
+        self.assertEqual(response.context["form"].initial["quantity"], 1)     
     
     
     def check_context_queryset(self, response, key, queryset):    
