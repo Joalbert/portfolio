@@ -9,6 +9,7 @@ from orders.models import (Extra, Topping, Pizza,
                         Sub, Salad, Pasta, DinnerPlatter,   
                         Order, Cart)
 from orders.forms import (CartForm, PizzaForm, PizzaToppingsForm, SubForm)
+from orders.helpers import is_dinner, is_pasta, is_pizza, is_sub, is_salad
 
 SMALL_SIZE = 0
 LARGE_SIZE = 1
@@ -586,3 +587,43 @@ class RestaurantTest(TestCase):
         # Total should be the entire total without the first item
         self.assertEqual(order.order_total,total)
         
+
+    def test_helper_is_pizza(self):
+        self.assertTrue(is_pizza(Pizza.objects.all().first()))
+        
+        self.assertFalse(is_pizza(Sub.objects.all().first()))
+        self.assertFalse(is_pizza(Pasta.objects.all().first()))
+        self.assertFalse(is_pizza(DinnerPlatter.objects.all().first()))
+        self.assertFalse(is_pizza(Salad.objects.all().first()))
+
+    def test_helper_is_sub(self):
+        self.assertTrue(is_sub(Sub.objects.all().first()))
+        
+        self.assertFalse(is_sub(Pizza.objects.all().first()))
+        self.assertFalse(is_sub(Pasta.objects.all().first()))
+        self.assertFalse(is_sub(DinnerPlatter.objects.all().first()))
+        self.assertFalse(is_sub(Salad.objects.all().first()))
+
+    def test_helper_is_pasta(self):
+        self.assertTrue(is_pasta(Pasta.objects.all().first()))
+        
+        self.assertFalse(is_pasta(Pizza.objects.all().first()))
+        self.assertFalse(is_pasta(Sub.objects.all().first()))
+        self.assertFalse(is_pasta(DinnerPlatter.objects.all().first()))
+        self.assertFalse(is_pasta(Salad.objects.all().first()))
+
+    def test_helper_is_dinner(self):
+        self.assertTrue(is_dinner(DinnerPlatter.objects.all().first()))
+        
+        self.assertFalse(is_dinner(Pizza.objects.all().first()))
+        self.assertFalse(is_dinner(Pasta.objects.all().first()))
+        self.assertFalse(is_dinner(Sub.objects.all().first()))
+        self.assertFalse(is_dinner(Salad.objects.all().first()))
+
+    def test_helper_is_salad(self):
+        self.assertTrue(is_salad(Salad.objects.all().first()))
+        
+        self.assertFalse(is_salad(Pizza.objects.all().first()))
+        self.assertFalse(is_salad(Pasta.objects.all().first()))
+        self.assertFalse(is_salad(DinnerPlatter.objects.all().first()))
+        self.assertFalse(is_salad(Sub.objects.all().first()))
