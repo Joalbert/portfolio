@@ -1,5 +1,10 @@
+import enum
 from django import template
+
 from orders.models import Pizza, Sub, DinnerPlatter
+from orders.helpers import (is_pizza, is_salad, is_sub, is_salad, 
+                            is_pasta, is_dinner)
+
 register = template.Library()
 
 @register.filter()
@@ -26,6 +31,37 @@ def total(orders):
         total += order.total
     return total
 
-def food_desc(menu):
+@register.filter()
+def food_desc(item):
+    text = ""
+    if(is_pizza(item.menu)):
+        text += f"{Pizza.MEAL_TYPE[item.menu.pizza.meal_type][1]} {item.menu.ingredient}"
+        queryset = item.toppings.all()
+        max_top = len(queryset)
+        for index, top in enumerate(queryset):
+            if index==0:
+                text += "Toppings: "
+            text += f"{top.topping}" 
+            if index+1<max_top:
+                text += ", "
+        return text
+    if (is_sub(item.menu)): 
+        text += f"Sub {item.menu.ingredient}"
+        queryset = item.extra.all()
+        extras_items = len(queryset)
+        for index, top in enumerate(queryset):
+            if index==0:
+                text += "Toppings: "
+            text += f"{top.extra}" 
+            if index+1<extras_items:
+                text += ", "
+        return text
+    if(is_salad(item.menu)):
+        return f"Salad {item.menu.ingredient}"
+
+    if(is_pasta(item.menu)):
+        return f"Pasta {item.menu.ingredient}"
     
-    return f"{menu.pizza} {menu.ingredient} {menu.meal_size}" 
+    if(is_dinner(item.menu)):
+        return f"Dinner Platter {item.menu.ingredient}"
+

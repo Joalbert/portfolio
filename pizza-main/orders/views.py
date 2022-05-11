@@ -83,34 +83,34 @@ class AddItemCartView(LoginRequiredMixin, CreateView):
             data["sub_total_item"] = Decimal(data["menu"].price) * Decimal(int(data["quantity"]))
             
             # Find order or create if not any in Draft status
-            try:
-                data["order"] = Order.objects.get(user=self.request.user, status = STATUS_DRAFT)
-            except Order.DoesNotExist:
-                data["order"] = Order.objects.create(
-                                     user=self.request.user, 
-                                     order_total = 0)
-            
+            data["order"] , _ = Order.objects.get_or_create(user=self.request.user, 
+                                        status = STATUS_DRAFT)
+
             # Check if food has toppings and if a valid option
             data_checkboxes = request.POST.copy() 
             toppings = data_checkboxes.pop("toppings",[])
             if(is_pizza(data["menu"])):
                 if data["menu"].pizza.amount_toppings==0:
                     cart = Cart.objects.create(**data)
-                    messages.add_message(request, messages.INFO, f"¡{data['menu']} added!")
+                    messages.add_message(request, messages.INFO, 
+                                        f"¡{data['menu']} added!")
                     return HttpResponseRedirect(self.success_url)
                 if len(toppings)==int(data["menu"].pizza.amount_toppings):
                     cart = Cart.objects.create(**data)
                     for top in toppings:
                         top_instance = Topping.objects.get(id=top)
                         cart.toppings.add(top_instance)
-                    messages.add_message(request, messages.INFO, f"¡{data['menu']} added!")
+                    messages.add_message(request, messages.INFO, 
+                                        f"¡{data['menu']} added!")
                     return HttpResponseRedirect(self.success_url)
                 else:
                     messages.add_message(request, messages.ERROR, 
-                                (f"{data['menu']} should have {int(data['menu'].pizza.amount_toppings)} "
+                                (f"{data['menu']} should have "
+                                 f"{int(data['menu'].pizza.amount_toppings)} "
                                  f"toppings and food has {len(toppings)} toppings." 
                                  f"Please, check your order."))
-                    return render(request,self.template_name, {"form": form, "menu": data["menu"] }) 
+                    return render(request,self.template_name, {"form": form, 
+                                "menu": data["menu"] }) 
             # Check if food has extras and if a valid option
             extras = data_checkboxes.pop("extra",[])
             if(is_sub(data["menu"])):
@@ -120,12 +120,15 @@ class AddItemCartView(LoginRequiredMixin, CreateView):
                     cart.sub_total_item += Decimal(data["quantity"])*extra_instance.price 
                     cart.extra.add(extra_instance)
                 cart.save()
-                messages.add_message(request, messages.INFO, f"¡{data['menu']} added!")
+                messages.add_message(request, messages.INFO, 
+                                    f"¡{data['menu']} added!")
                 return HttpResponseRedirect(self.success_url)
             # Create item in cart
-            if (not is_pizza(data["menu"]) and not is_sub(data["menu"])):
+            if (not is_pizza(data["menu"]) and 
+                not is_sub(data["menu"])):
                 Cart.objects.create(**data)
-                messages.add_message(request, messages.INFO, f"¡{data['menu']} added!")
+                messages.add_message(request, messages.INFO, 
+                                    f"¡{data['menu']} added!")
                 return HttpResponseRedirect(self.success_url)
         return super().post(request, *args, **kwargs)    
       
@@ -138,13 +141,18 @@ class CartView(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         try:
-            context["total"] = Order.objects.get(Q(user=self.request.user)&Q(status=self.STATUS_OPEN)).order_total
+            context["total"] = Order.objects.get(Q(user=self.request.user)&
+                                                Q(status=self.STATUS_OPEN)
+                                                ).order_total
+                                                            
         except Order.DoesNotExist:
             pass
         return context
     
     def get_queryset(self):
-        return Cart.objects.filter(Q(user=self.request.user)&Q(status=self.STATUS_OPEN))
+        return Cart.objects.filter(Q(user=self.request.user)&
+                    Q(status=self.STATUS_OPEN)).prefetch_related(
+                        "menu", "order")
 
 class UpdateItemCartView(LoginRequiredMixin, UpdateView):
     template_name = "orders/form.html"
@@ -152,7 +160,8 @@ class UpdateItemCartView(LoginRequiredMixin, UpdateView):
     STATUS_OPEN = 0
         
     def get_queryset(self):
-        return Cart.objects.filter(Q(user=self.request.user)&Q(status=self.STATUS_OPEN))
+        return Cart.objects.filter(
+            Q(user=self.request.user)&Q(status=self.STATUS_OPEN))
     
     def get_context_data(self, **kwargs):
         context =super().get_context_data(**kwargs)

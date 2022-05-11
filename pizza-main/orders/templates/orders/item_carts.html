@@ -1,3 +1,4 @@
+{% load orders_extras %}
 <table class="table table-striped">
     <thead>
       <tr>
@@ -11,38 +12,7 @@
     {% for item in carts %}
       <tr>
         <td> 
-          {% if item.menu.pizza %}
-            {{item.menu.pizza}} 
-            {% for top in item.toppings.all %}
-              {% if forloop.first %}
-              Toppings: 
-              {% endif %}
-              {{top}}
-              {% if not forloop.last %}
-              ,
-              {% endif %}
-            {%endfor%}
-          {% endif %}
-          {% if item.menu.sub %}
-              Sub {{item.menu.sub}} 
-            {% for extra in item.extra.all %}
-            {% if forloop.first %}
-            Extras: 
-            {% endif %}
-            {{extra}}
-            {% if not forloop.last %},
-            {% endif %}
-            {% endfor %}
-          {% endif %}
-          {% if item.menu.salad %}
-              Salad {{item.menu.salad}}
-          {% endif %}
-          {% if item.menu.pasta %}
-            Pasta {{item.menu.pasta}}
-          {% endif %}
-          {% if item.menu.dinnerplatter %}
-            Dinner Platter {{item.menu.dinnerplatter}}
-          {% endif %}
+          {{ item|food_desc }}
         </td>
         <td> {{item.quantity}}</td>
         <td> ${{item.menu.price}}</td>

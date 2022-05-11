@@ -539,3 +539,50 @@ class RestaurantTest(TestCase):
         self.assertIn("carts", response.context.keys())
         self.assertIn("editable", response.context.keys())
         self.assertIn("total", response.context.keys())
+
+    def test_signal_add_cart(self):
+        food = Pizza.objects.filter(amount_toppings=1).first()            
+        cart = self.create_food(food)
+        quantity = 1
+        total = Decimal(food.price)*Decimal(quantity)
+        order = Order.objects.get(id=cart.order.id)
+        self.assertEqual(order.order_total,total)
+        
+        food = Sub.objects.all().first()            
+        Cart.objects.create(status = STATUS_IN_CART,
+                    order = order, 
+                    user= self.user,menu=food, quantity=1,
+                    sub_total_item=Decimal(food.price)*Decimal(1))
+        total += Decimal(food.price)*Decimal(quantity)
+        order = Order.objects.get(id=cart.order.id)
+        self.assertEqual(order.order_total,total)
+        
+    def test_signal_remove_cart(self):
+        # Create item in cart
+        first_item = Pizza.objects.filter(amount_toppings=1).first()            
+        cart = self.create_food(first_item)
+        
+        # Totalize total order
+        quantity = 1
+        total = Decimal(first_item.price)*Decimal(quantity)
+        order = Order.objects.get(id=cart.order.id)
+        
+        #Create other item in cart
+        second_item = Sub.objects.all().first()            
+        Cart.objects.create(status = STATUS_IN_CART,
+                    order = order, 
+                    user= self.user,menu=second_item, quantity=1,
+                    sub_total_item=Decimal(second_item.price)*Decimal(1))
+        # Totalize entire order
+        total += Decimal(second_item.price)*Decimal(quantity)
+        
+        # Delete first item of cart
+        Cart.objects.get(id=cart.id).delete()
+        # Totalize
+        total -= Decimal(first_item.price)*Decimal(quantity)
+        
+        # Get Order
+        order = Order.objects.get(id=cart.order.id)
+        # Total should be the entire total without the first item
+        self.assertEqual(order.order_total,total)
+        
