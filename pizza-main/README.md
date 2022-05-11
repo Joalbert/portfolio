@@ -12,6 +12,7 @@ Basic django app which is intended to order in a restaurant is based on project 
         <li> Django Model(ORM), One to Many, Many to Many Relationships, multitable inheritance and so on.</li>
         <li> Django Signal.</li>
         <li> Django Test framework.</li>
+        <li> Django Debugger Toolbar for optimize amount of queries by views.</li>
     </ul>    
 <h2> CSS Framework</h2>
 <p> The framework CSS used for deployment was bootsrap 5 using django-bootstrap-v5 application. </p>
