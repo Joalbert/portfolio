@@ -50,6 +50,7 @@ class AddItemCartView(LoginRequiredMixin, CreateView):
     def get_context_data(self, **kwargs):
         context =super().get_context_data(**kwargs)
         context["menu"] = Menu.objects.get(id=self.kwargs.get("menu",0))
+        context["title"] = "Add Item to Cart"
         return context
     
     def get_initial(self):
@@ -167,6 +168,7 @@ class UpdateItemCartView(LoginRequiredMixin, UpdateView):
         context =super().get_context_data(**kwargs)
         cart = Cart.objects.get(id=self.kwargs.get("pk",0))
         context["menu"] = cart.menu
+        context["title"] = "Update Item to Cart"
         return context
 
     def get_form_class(self):
@@ -208,6 +210,7 @@ class DeleteItemCartView(LoginRequiredMixin, DeleteView):
         context =super().get_context_data(**kwargs)
         cart = Cart.objects.get(id=self.kwargs.get("pk",0))
         context["menu"] = cart.menu
+        context["title"] = "Delete Item from Cart"
         return context
 
     def delete(self,request, *args, **kwargs):
