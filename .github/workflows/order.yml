@@ -16,6 +16,11 @@ jobs:
         python-version: [3.7, 3.8, 3.9]
 
     steps:
+    - name: Define enviroment variable
+      env:
+        SECRET: 1234
+      run:
+        echo "Enviroment var ${{env.SECRET}}"
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v3
@@ -25,7 +30,6 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r pizza-main/requirements.txt
-        export SECRET="DUMMYFORTESTPURPOSE"
     - name: Run Tests
       run: |
         python pizza-main/manage.py test
