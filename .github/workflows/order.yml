@@ -18,9 +18,9 @@ jobs:
     steps:
     - name: Define enviroment variable
       env:
-        SECRET_KEY: ${{ secrets.SECRET_KEY }}
+        SECRET_KEY: 1234
       run:
-        echo "Enviroment var ${{ secrets.SECRET_KEY }} "
+        echo "Enviroment var ${{ env.SECRET_KEY }} "
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v3
