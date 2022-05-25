@@ -20,7 +20,7 @@ jobs:
       env:
         SECRET_KEY: ${{ secrets.SECRET_KEY }}
       run:
-        echo "Enviroment var ${{env.SECRET}}"
+        echo "Enviroment var ${{ secrets.SECRET_KEY }} "
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v3
