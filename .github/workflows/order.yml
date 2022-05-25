@@ -25,7 +25,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r pizza-main/requirements.txt
-        echo "update secret key"
+        export SECRET="DUMMYFORTESTPURPOSE"
     - name: Run Tests
       run: |
         python pizza-main/manage.py test
