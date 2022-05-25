@@ -18,7 +18,7 @@ jobs:
     steps:
     - name: Define enviroment variable
       env:
-        SECRET: 1234
+        SECRET_KEY: ${{ secrets.SECRET_KEY }}
       run:
         echo "Enviroment var ${{env.SECRET}}"
     - uses: actions/checkout@v3
