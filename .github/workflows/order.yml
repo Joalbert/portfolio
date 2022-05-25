@@ -10,6 +10,9 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
+    env:
+        SECRET_KEY: 1234      
+      
     strategy:
       max-parallel: 4
       matrix:
@@ -22,8 +25,6 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install Dependencies
-      env:
-        SECRET_KEY: 1234      
       run: |
         echo $SECRET_KEY
         python -m pip install --upgrade pip
