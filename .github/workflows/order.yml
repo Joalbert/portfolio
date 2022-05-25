@@ -32,4 +32,4 @@ jobs:
         pip install -r pizza-main/requirements.txt
     - name: Run Tests
       run: |
-        python pizza-main/manage.py test
+        python pizza-main/manage.py test pizza-main/
