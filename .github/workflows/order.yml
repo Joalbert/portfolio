@@ -11,7 +11,7 @@ jobs:
 
     runs-on: ubuntu-latest
     env:
-        SECRET_KEY: 1234      
+        SECRET_KEY: ${{ secrets.SECRET_KEY }}      
       
     strategy:
       max-parallel: 4
@@ -26,6 +26,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install Dependencies
       run: |
+        env
         echo $SECRET_KEY
         python -m pip install --upgrade pip
         pip install -r pizza-main/requirements.txt
